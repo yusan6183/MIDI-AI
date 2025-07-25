@@ -61,7 +61,7 @@ def index():
             finally:
                 os.remove(tmp_path)
 
-    return render_template("Web8.html", feedback=feedback)
+    return render_template("index.html", feedback=feedback)
 
 if __name__ == "__main__":
     app.run(debug=True)
