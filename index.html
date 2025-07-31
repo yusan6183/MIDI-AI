@@ -168,13 +168,14 @@
   <section id="home" class="active">
     <h1><i class="fas fa-headphones-alt"></i> MIDI AI コードのフィードバック生成</h1>
     <form method="post" enctype="multipart/form-data">
-      <label for="midi_file">🎼 MIDIファイルを選択：</label>
+      <label for="midi_file"><i class="fas fa-folder-open"></i> MIDIファイルを選択：</label>
       <input type="file" id="midi_file" name="midi_file" accept=".mid" required />
 
-      <label for="intention">🎵 曲の意図（例：悲しいバラードにしたい）：</label>
+      <label for="intention"><i class="fas fa-music"></i> 曲の意図（例：悲しいバラードにしたい）：</label>
       <textarea id="intention" name="intention" rows="3" placeholder="曲のイメージや方向性を入力してください" required></textarea>
 
-      <button type="submit"><i class="fas fa-magic"></i> フィードバック生成</button>
+      <button type="submit"><i class="fas fa-pen"></i> フィードバック生成</button>
+      <button type="button" id="previewBtn" style="margin-top:10px;" disabled><i class="fas fa-play"></i>プレビュー再生</button>
     </form>
 
     {% if feedback %}
@@ -201,14 +202,60 @@
     &copy; MIDI AI Feedback
   </footer>
 
-  <script>
-    function showTab(id) {
-      document.querySelectorAll('section').forEach(section => {
-        section.classList.remove('active');
-      });
-      document.getElementById(id).classList.add('active');
+   <script>
+  function showTab(id) {
+    document.querySelectorAll('section').forEach(section => {
+      section.classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
+  }
+
+  //プレビュー再生処理
+  const fileInput = document.getElementById('midi_file');
+  const previewBtn = document.getElementById('previewBtn');
+  let midiDataUrl = null;
+  let isPlaying=false;
+
+  //ファイル選択時
+  fileInput.addEventListener('change', function () {
+    const file = fileInput.files[0];
+    if (!file || file.type !== 'audio/midi' && !file.name.endsWith('.mid')) {
+      previewBtn.disabled = true;
+      return;
     }
-  </script>
+
+    //ファイル読み込み
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      midiDataUrl = e.target.result;
+
+      //再生準備（一時停止）
+      MIDIjs.stop();
+      isPlaying=false;
+
+      //再生ボタン有効化
+      previewBtn.disabled = false;
+      previewBtn.innerHTML='<i class="fas fa-play"></i> プレビュー再生';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  //ボタンクリック時
+  previewBtn.addEventListener('click', function () {
+    if (!midiDataUrl) return;
+
+    if(isPlaying){
+      MIDIjs.stop();
+      isPlaying=false;
+      previewBtn.innerHTML='<i class="fas fa-play"></i> プレビュー再生';
+    }
+    else{
+      MIDIjs.play(midiDataUrl);
+      isPlaying=true;
+      previewBtn.innerHTML='<i class="fas fa-pause"></i> 停止';
+    }
+    });
+</script>
 
 </body>
 </html>
