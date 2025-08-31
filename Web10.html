@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MIDI AI フィードバック</title>
+  <title>MIDI AI Insighter</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&display=swap" rel="stylesheet" />
   <style>
@@ -144,7 +144,7 @@
 
   <header>
     <div class="logo" onclick="showTab('home')">
-      <i class="fas fa-music"></i> MIDI AI Feedback
+      <i class="fas fa-music"></i> MIDI AI Insighter
     </div>
     <nav>
       <a onclick="showTab('home')"><i class="fas fa-home"></i> <span id="navHomeText">ホーム</span></a>
@@ -164,7 +164,7 @@
 
   <!-- ホーム画面 -->
   <section id="home" class="active">
-    <h1 id="homeTitle"><i class="fas fa-headphones-alt"></i> MIDI AI コードのフィードバック生成</h1>
+    <h1 id="homeTitle"><i class="fas fa-headphones-alt"></i> AI フィードバック生成</h1>
     <form method="post" enctype="multipart/form-data">
       <label for="midi_file" id="labelMidiFile"><i class="fas fa-folder-open"></i> MIDIファイルを選択：</label>
       
@@ -194,17 +194,20 @@
     <h1 id="howtoTitle">使い方</h1>
 
     <h2 id="step1Title">① MIDIファイルをアップロード</h2>
-    <p id="step1Desc">トップページのフォームでMIDIファイルを選択する。</p>
+    <p id="step1Desc">ホームページのフォームでMIDIファイルを選択する。</p>
 
     <h2 id="step2Title">② 曲の意図を記入</h2>
     <p id="step2Desc">例えば「悲しいバラードにしたい」など、楽曲の方向性をできるだけ具体的に記入する。</p>
 
     <h2 id="step3Title">③ フィードバック生成を押す</h2>
     <p id="step3Desc">AIがコードの内容や構成を分析してフィードバックを返します。</p>
+
+    <h2 id="step4Title">④　プレビュー再生</h2>
+    <p id="step4Desc">ボタンを押すとアップロードした曲が流れます。</p>
   </section>
 
   <footer>
-    &copy; MIDI AI Feedback
+    &copy; 2025 MIDI AI Insighter
   </footer>
 
   <script>
@@ -304,7 +307,7 @@
         document.getElementById('navHomeText').textContent = 'ホーム';
         document.getElementById('navHowtoText').textContent = '使い方';
 
-        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> MIDI AI コードのフィードバック生成';
+        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> AI フィードバック生成';
         document.getElementById('labelMidiFile').innerHTML = '<i class="fas fa-folder-open"></i> MIDIファイルを選択：';
         fileBtn.innerHTML = '参照';
         if(fileInput.files.length === 0){
@@ -319,17 +322,19 @@
 
         document.getElementById('howtoTitle').textContent = '使い方';
         document.getElementById('step1Title').textContent = '① MIDIファイルをアップロード';
-        document.getElementById('step1Desc').textContent = 'トップページのフォームでMIDIファイルを選択する。';
+        document.getElementById('step1Desc').textContent = 'ホームページのフォームでMIDIファイルを選択する。';
         document.getElementById('step2Title').textContent = '② 曲の意図を記入';
         document.getElementById('step2Desc').textContent = '例えば「悲しいバラードにしたい」など、楽曲の方向性をできるだけ具体的に記入する。';
         document.getElementById('step3Title').textContent = '③ フィードバック生成を押す';
         document.getElementById('step3Desc').textContent = 'AIがコードの内容や構成を分析してフィードバックを返します。';
+        document.getElementById('step4Title').textContent = '④　プレビュー再生';
+        document.getElementById('step4Desc').textContent = 'ボタンを押すとアップロードした曲が流れます。';
 
       } else {
         document.getElementById('navHomeText').textContent = 'Home';
         document.getElementById('navHowtoText').textContent = 'How to Use';
 
-        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> MIDI AI Code Feedback Generator';
+        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> AI Feedback Generator';
         document.getElementById('labelMidiFile').innerHTML = '<i class="fas fa-folder-open"></i> Select MIDI file:';
         fileBtn.innerHTML = 'Browse';
         if(fileInput.files.length === 0){
@@ -344,11 +349,13 @@
 
         document.getElementById('howtoTitle').textContent = 'How to Use';
         document.getElementById('step1Title').textContent = '① Upload MIDI file';
-        document.getElementById('step1Desc').textContent = 'Select a MIDI file using the form on the top page.';
+        document.getElementById('step1Desc').textContent = 'Select a MIDI file using the form on the home page.';
         document.getElementById('step2Title').textContent = '② Enter song intention';
         document.getElementById('step2Desc').textContent = 'Write as specifically as possible about the direction of the music, e.g. "I want a sad ballad."';
         document.getElementById('step3Title').textContent = '③ Click Generate Feedback';
         document.getElementById('step3Desc').textContent = 'AI analyzes the chords and structure and returns feedback.';
+        document.getElementById('step4Title').textContent = '④　Preview Play';
+        document.getElementById('step4Desc').textContent = 'Pressing the button plays the uploaded song.';
       }
     }
   </script>
