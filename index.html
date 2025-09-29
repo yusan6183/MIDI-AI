@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MIDI AI フィードバック</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&display=swap" rel="stylesheet">
+  <title>MIDI AI Insighter</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: 'Noto Serif JP', serif;
@@ -13,7 +13,6 @@
       background: #f1f5f9;
       color: #1e293b;
     }
-
     header {
       background-color: #1e293b;
       color: white;
@@ -23,35 +22,34 @@
       align-items: center;
       flex-wrap: wrap;
     }
-
     .logo {
       font-size: 1.6em;
       font-weight: bold;
       cursor: pointer;
     }
-
-    nav a {
+    nav a, nav button {
       color: #e2e8f0;
       margin-left: 20px;
       text-decoration: none;
       font-weight: 500;
       cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 1em;
+      padding: 0;
     }
-
-    nav a:hover {
+    nav a:hover, nav button:hover {
       color: #94d2bd;
     }
-
     section {
       display: none;
       padding: 30px 20px;
       animation: fadeIn 0.5s ease;
     }
-
     section.active {
       display: block;
     }
-
     form {
       background: white;
       padding: 24px;
@@ -60,13 +58,11 @@
       margin: auto;
       box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
-
     label {
       font-weight: 600;
       display: block;
       margin-bottom: 0.5em;
     }
-
     input[type="file"],
     textarea {
       width: 100%;
@@ -79,8 +75,7 @@
       box-sizing: border-box;
       resize: vertical;
     }
-
-    button {
+    button[type="submit"], #previewBtn {
       background-color: #264653;
       color: white;
       font-size: 1.1em;
@@ -90,34 +85,28 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
-    button:hover {
+    button[type="submit"]:hover, #previewBtn:hover {
       background-color: #1b3a4b;
     }
-
     ul {
       padding-left: 20px;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 20px;
     }
-
     footer {
       text-align: center;
       padding: 20px;
       color: #64748b;
       font-size: 0.9em;
     }
-
     .feedback-title {
       text-align: center;
       margin-top: 40px;
       font-size: 1.4em;
       color: #334155;
     }
-
     .feedback-box {
       background-color: #f8fafc;
       border-left: 5px solid #264653;
@@ -132,12 +121,10 @@
       border-radius: 8px;
       color: #1e293b;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     @media (max-width: 600px) {
       header {
         flex-direction: column;
@@ -157,108 +144,221 @@
 
   <header>
     <div class="logo" onclick="showTab('home')">
-      <i class="fas fa-music"></i> MIDI AI Feedback
+      <i class="fas fa-music"></i> MIDI AI Insighter
     </div>
     <nav>
-      <a onclick="showTab('home')"><i class="fas fa-home"></i> ホーム</a>
-      <a onclick="showTab('howto')"><i class="far fa-question-circle"></i> 使い方</a>
+      <a onclick="showTab('home')"><i class="fas fa-home"></i> <span id="navHomeText">ホーム</span></a>
+      <a onclick="showTab('howto')"><i class="far fa-question-circle"></i> <span id="navHowtoText">使い方</span></a>
+
+      <div id="langSelector" style="position: relative; display: inline-block; margin-left: 20px;">
+        <button id="langToggle" style="background:none; border:none; color:#e2e8f0; cursor:pointer; font-weight:500; font-family: inherit;" >
+          <i class="fas fa-globe"></i> Language
+        </button>
+        <ul id="langMenu" style="display:none; position: absolute; right: 0; background: #1e293b; list-style:none; margin:0; padding:5px 0; border-radius: 4px; min-width: 100px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index:1000;">
+          <li style="padding: 8px 20px; color:#e2e8f0; cursor:pointer;" data-lang="ja">日本語</li>
+          <li style="padding: 8px 20px; color:#e2e8f0; cursor:pointer;" data-lang="en">English</li>
+        </ul>
+      </div>
     </nav>
   </header>
 
   <!-- ホーム画面 -->
   <section id="home" class="active">
-    <h1><i class="fas fa-headphones-alt"></i> MIDI AI コードのフィードバック生成</h1>
+    <h1 id="homeTitle"><i class="fas fa-headphones-alt"></i> AI フィードバック生成</h1>
     <form method="post" enctype="multipart/form-data">
-      <label for="midi_file"><i class="fas fa-folder-open"></i> MIDIファイルを選択：</label>
-      <input type="file" id="midi_file" name="midi_file" accept=".mid" required />
+      <label for="midi_file" id="labelMidiFile"><i class="fas fa-folder-open"></i> MIDIファイルを選択：</label>
+      
+      <!--ファイル選択ボタン-->
+      <input type="file" id="midi_file" name="midi_file" accept=".mid" required style="display:none;" />
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.2em;">
+        <button type="button" id="fileBtn" style="background-color:#264653; color:white; padding:10px 16px; border:none; border-radius:6px; cursor:pointer;">参照</button>
+        <span id="fileName">ファイルが選択されていません。</span>
+      </div>
 
-      <label for="intention"><i class="fas fa-music"></i> 曲の意図（例：悲しいバラードにしたい）：</label>
-      <textarea id="intention" name="intention" rows="3" placeholder="曲のイメージや方向性を入力してください" required></textarea>
+      <label for="intention" id="labelIntention"><i class="fas fa-music"></i> 曲の意図・曲のキー（例：悲しいバラードにしたい・Cキー）：</label>
+      <textarea id="intention" name="intention" rows="3" placeholder="曲のイメージや方向性、曲に使用しているキーを入力してください" required></textarea>
 
-      <button type="submit"><i class="fas fa-pen"></i> フィードバック生成</button>
+      <button type="submit" id="submitBtn"><i class="fas fa-pen"></i> フィードバック生成</button>
       <button type="button" id="previewBtn" style="margin-top:10px;" disabled><i class="fas fa-play"></i> プレビュー再生</button>
     </form>
 
+    <!-- AIフィードバック結果 -->
     {% if feedback %}
-    <h2 class="feedback-title"><i class="fas fa-comment-dots"></i> AIフィードバック結果</h2>
+    <h2 class="feedback-title" id="feedbacktitle"><i class="fas fa-comment-dots"></i> AIフィードバック結果</h2>
     <div class="feedback-box">{{ feedback }}</div>
     {% endif %}
   </section>
 
   <!-- 使い方画面 -->
   <section id="howto">
-    <h1>使い方</h1>
+    <h1 id="howtoTitle">使い方</h1>
 
-    <h2>① MIDIファイルをアップロード</h2>
-    <p>トップページのフォームでMIDIファイルを選択する。</p>
+    <h2 id="step1Title">① MIDIファイルをアップロード</h2>
+    <p id="step1Desc">ホームページのフォームでMIDIファイルを選択する。</p>
 
-    <h2>② 曲の意図を記入</h2>
-    <p>例えば「悲しいバラードにしたい」など、楽曲の方向性をできるだけ具体的に記入する。</p>
+    <h2 id="step2Title">② 曲の意図・曲のキーを記入</h2>
+    <p id="step2Desc">例えば「悲しいバラードにしたい・Cキー」など、曲の方向性や曲で使用しているキーをできるだけ具体的に記入する。</p>
 
-    <h2>③ フィードバック生成を押す</h2>
-    <p>AIがコードの内容や構成を分析してフィードバックを返します。</p>
+    <h2 id="step3Title">③ フィードバック生成を押す</h2>
+    <p id="step3Desc">AIがコードの内容や構成を分析してフィードバックを返す。</p>
+
+    <h2 id="step4Title">④　プレビュー再生</h2>
+    <p id="step4Desc">ボタンを押すとアップロードした曲が流れる。</p>
   </section>
 
   <footer>
-    &copy; MIDI AI Feedback
+    &copy; 2025 MIDI AI Insighter
   </footer>
 
-   <script>
-  function showTab(id) {
-    document.querySelectorAll('section').forEach(section => {
-      section.classList.remove('active');
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
+
+    const fileInput = document.getElementById('midi_file');
+    const previewBtn = document.getElementById('previewBtn');
+    const langToggleBtn = document.getElementById('langToggle');
+    const langMenu = document.getElementById('langMenu');
+    const submitBtn = document.getElementById('submitBtn');
+    const fileBtn   = document.getElementById('fileBtn');
+    const fileName  = document.getElementById('fileName');
+
+    let midiDataUrl = null;
+    let isPlaying = false;
+    let currentLang = 'ja';
+
+    //ファイル選択ボタン動作
+    fileBtn.addEventListener('click',() => fileInput.click());
+    fileInput.addEventListener('change',() => {
+      fileName.textContent = fileInput.files.length > 0
+      ? fileInput.files[0].name
+      : (currentLang === 'ja'?'ファイルが選択されていません。':'No file selected.');
     });
-    document.getElementById(id).classList.add('active');
-  }
 
-  //プレビュー再生処理
-  const fileInput = document.getElementById('midi_file');
-  const previewBtn = document.getElementById('previewBtn');
-  let midiDataUrl = null;
-  let isPlaying=false;
+    // ファイル選択時（プレビュー）
+    fileInput.addEventListener('change', function () {
+      const file = fileInput.files[0];
+      if (!file || (file.type !== 'audio/midi' && !file.name.endsWith('.mid'))) {
+        previewBtn.disabled = true;
+        return;
+      }
 
-  //ファイル選択時
-  fileInput.addEventListener('change', function () {
-    const file = fileInput.files[0];
-    if (!file || file.type !== 'audio/midi' && !file.name.endsWith('.mid')) {
-      previewBtn.disabled = true;
-      return;
-    }
-
-    //ファイル読み込み
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      midiDataUrl = e.target.result;
-
-      //再生準備（一時停止）
-      MIDIjs.stop();
-      isPlaying=false;
-
-      //再生ボタン有効化
-      previewBtn.disabled = false;
-      previewBtn.innerHTML='<i class="fas fa-play"></i> プレビュー再生';
-    };
-    reader.readAsDataURL(file);
-  });
-
-  //ボタンクリック時
-  previewBtn.addEventListener('click', function () {
-    if (!midiDataUrl) return;
-
-    if(isPlaying){
-      MIDIjs.stop();
-      isPlaying=false;
-      previewBtn.innerHTML='<i class="fas fa-play"></i> プレビュー再生';
-    }
-    else{
-      MIDIjs.play(midiDataUrl);
-      isPlaying=true;
-      previewBtn.innerHTML='<i class="fas fa-pause"></i> 停止';
-    }
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        midiDataUrl = e.target.result;
+        MIDIjs.stop();
+        isPlaying = false;
+        previewBtn.disabled = false;
+        previewBtn.innerHTML = currentLang === 'ja' 
+          ? '<i class="fas fa-play"></i> プレビュー再生' 
+          : '<i class="fas fa-play"></i> Preview Play';
+      };
+      reader.readAsDataURL(file);
     });
-</script>
+
+    // プレビュー再生ボタン
+    previewBtn.addEventListener('click', function () {
+      if (!midiDataUrl) return;
+
+      if (isPlaying) {
+        MIDIjs.stop();
+        isPlaying = false;
+        previewBtn.innerHTML = currentLang === 'ja' 
+          ? '<i class="fas fa-play"></i> プレビュー再生' 
+          : '<i class="fas fa-play"></i> Preview Play';
+      } else {
+        MIDIjs.play(midiDataUrl);
+        isPlaying = true;
+        previewBtn.innerHTML = currentLang === 'ja' 
+          ? '<i class="fas fa-pause"></i> 停止' 
+          : '<i class="fas fa-pause"></i> Stop';
+      }
+    });
+
+    // 言語メニュー表示
+    langToggleBtn.addEventListener('click', () => {
+      langMenu.style.display = langMenu.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // メニュー外クリックで閉じる
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('langSelector').contains(e.target)) {
+        langMenu.style.display = 'none';
+      }
+    });
+
+    // 言語選択
+    langMenu.querySelectorAll('li').forEach(item => {
+      item.addEventListener('click', () => {
+        const selectedLang = item.getAttribute('data-lang');
+        if(selectedLang !== currentLang){
+          currentLang = selectedLang;
+          langMenu.style.display = 'none';
+          updateLanguage(currentLang);
+        }
+      });
+    });
+
+    function updateLanguage(lang) {
+      if(lang === 'ja'){
+        document.getElementById('navHomeText').textContent = 'ホーム';
+        document.getElementById('navHowtoText').textContent = '使い方';
+
+        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> AI フィードバック生成';
+        document.getElementById('labelMidiFile').innerHTML = '<i class="fas fa-folder-open"></i> MIDIファイルを選択：';
+        fileBtn.innerHTML = '参照';
+        if(fileInput.files.length === 0){
+          fileName.textContent = 'ファイルが選択されていません。';
+        }
+        document.getElementById('labelIntention').innerHTML = '<i class="fas fa-music"></i> 曲の意図・曲のキー（例：悲しいバラードにしたい・Cキー）：';
+        document.getElementById('intention').placeholder = '曲のイメージや方向性、曲に使用しているキーを入力してください。';
+        document.getElementById('intention').style.fontSize = "1.0em";
+        submitBtn.innerHTML = '<i class="fas fa-pen"></i> フィードバック生成';
+        previewBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i> 停止' : '<i class="fas fa-play"></i> プレビュー再生';
+        document.getElementById('feedbacktitle').innerHTML = '<i class="fas fa-comment-dots"></i> AIフィードバック結果';
+
+        document.getElementById('howtoTitle').textContent = '使い方';
+        document.getElementById('step1Title').textContent = '① MIDIファイルをアップロード';
+        document.getElementById('step1Desc').textContent = 'ホームページのフォームでMIDIファイルを選択する。';
+        document.getElementById('step2Title').textContent = '② 曲の意図・曲のキーを記入';
+        document.getElementById('step2Desc').textContent = '例えば「悲しいバラードにしたい・Cキー」など、曲の方向性や曲で使用しているキーをできるだけ具体的に記入する。';
+        document.getElementById('step3Title').textContent = '③ フィードバック生成を押す';
+        document.getElementById('step3Desc').textContent = 'AIがコードの内容や構成を分析してフィードバックを返します。';
+        document.getElementById('step4Title').textContent = '④　プレビュー再生';
+        document.getElementById('step4Desc').textContent = 'ボタンを押すとアップロードした曲が流れます。';
+
+      } else {
+        document.getElementById('navHomeText').textContent = 'Home';
+        document.getElementById('navHowtoText').textContent = 'How to Use';
+
+        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> AI Feedback Generator';
+        document.getElementById('labelMidiFile').innerHTML = '<i class="fas fa-folder-open"></i> Select MIDI file:';
+        fileBtn.innerHTML = 'Browse';
+        if(fileInput.files.length === 0){
+          fileName.textContent = 'No file selected.';
+        }
+        document.getElementById('labelIntention').innerHTML = '<i class="fas fa-music"></i> Song intention・Song key (e.g. want a sad ballad・C key):';
+        document.getElementById('intention').placeholder = "Enter the song's image, direction and the key used in the song.";
+        document.getElementById('intention').style.fontSize = "1.3em";
+        submitBtn.innerHTML = '<i class="fas fa-pen"></i> Generate Feedback';
+        previewBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i> Stop' : '<i class="fas fa-play"></i> Preview Play';
+        document.getElementById('feedbacktitle').innerHTML = '<i class="fas fa-comment-dots"></i> AI Feedback Result';
+
+        document.getElementById('howtoTitle').textContent = 'How to Use';
+        document.getElementById('step1Title').textContent = '① Upload MIDI file';
+        document.getElementById('step1Desc').textContent = 'Select a MIDI file using the form on the home page.';
+        document.getElementById('step2Title').textContent = '② Enter song intention・song key';
+        document.getElementById('step2Desc').textContent = 'Write as specifically as possible about the direction and the key used in the song, e.g. "I want a sad ballad.・C key"';
+        document.getElementById('step3Title').textContent = '③ Click Generate Feedback';
+        document.getElementById('step3Desc').textContent = 'AI analyzes the chords and structure and returns feedback.';
+        document.getElementById('step4Title').textContent = '④　Preview Play';
+        document.getElementById('step4Desc').textContent = 'Pressing the button plays the uploaded song.';
+      }
+    }
+  </script>
 
 </body>
 </html>
-
-
