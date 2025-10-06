@@ -25,6 +25,12 @@ def analyze_midi(file_path, intention="なし"):
 
             input_text = f"""ユーザーの意図とキー：{intention}
 コード進行：{' → '.join(chord_list)}
+ルート音の変化がなく音が追加されている場合はアルペジオと判断してください
+1. Gメジャーコード（G1, G2, G4） → 構成音：G, B, D  
+2. GメジャーコードにB4追加（G1, G2, G4, B4） → 構成音同じ（Bが重複）  
+3. GメジャーコードにD5追加（G1, G2, G4, B4, D5）  
+4. GメジャーコードにA5追加（G1, G2, G4, B4, D5, A5）
+
 あなたは音楽理論の教師です。
 上記の結果を踏まえて学習者向けに
 ・使用したキー・コード、コードの構成音は上記の結果をそのまま表示、スケールの構成音も記述すること
@@ -102,6 +108,7 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
