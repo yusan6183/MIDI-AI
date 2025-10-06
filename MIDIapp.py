@@ -25,9 +25,6 @@ def analyze_midi(file_path, intention="なし"):
 
             input_text = f"""ユーザーの意図とキー：{intention}
 コード進行：{' → '.join(chord_list)}
-コードは連続しているコードを一つとして数えてください。
-例：[F3 A3 C4] → [G3 B3 D4] → [A3 C4 E4] → [G3 B3 D4] → [F3 A3 C4] → [A3 C4 E4] → [G3 B3 D4] → [G3 B3 D4]　　これは七つになります
-
 あなたは音楽理論の教師です。
 上記の結果を踏まえて学習者向けに
 ・使用したキー・コード、コードの構成音は上記の結果をそのまま表示、スケールの構成音も記述すること
@@ -105,6 +102,7 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
