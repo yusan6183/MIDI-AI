@@ -77,7 +77,7 @@ def analyze_midi(file_path, intention="なし"):
         return f"解析エラー: {str(e)}"
 
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",  
+            model="gpt-5.1-mini",  
             messages=[
                 {"role": "system", "content": "あなたは音楽理論に詳しい教師です。"},
                 {"role": "user", "content": input_text}
@@ -114,6 +114,7 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
