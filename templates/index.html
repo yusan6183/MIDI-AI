@@ -261,13 +261,69 @@
     let isPlaying = false;
     let currentLang = 'ja';
 
-    //ファイル選択ボタン動作
-    fileBtn.addEventListener('click',() => fileInput.click());
-    fileInput.addEventListener('change',() => {
-      fileName.textContent = fileInput.files.length > 0
-      ? fileInput.files[0].name
-      : (currentLang === 'ja'?'ファイルが選択されていません。':'No file selected.');
-    });
+// ===== ファイル選択ボタン動作（クリック＋ドラッグ＆ドロップ） =====
+document.addEventListener('DOMContentLoaded', () => {
+
+const fileInput = document.getElementById('midi_file');
+const fileBtn   = document.getElementById('fileBtn');
+const fileName  = document.getElementById('fileName');
+
+if (!fileInput || !fileBtn || !fileName) {
+  console.error('要素が取得できていません');
+  return;
+}
+
+// クリックで選択
+fileBtn.addEventListener('click', () => {
+  fileInput.click();
+});
+
+// 通常選択
+fileInput.addEventListener('change', () => {
+  fileName.textContent = fileInput.files.length > 0
+    ? fileInput.files[0].name
+    : (currentLang === 'ja'
+        ? 'ファイルが選択されていません。'
+        : 'No file selected.');
+});
+
+// drag over
+fileBtn.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  fileBtn.style.backgroundColor = '#2a9d8f';
+});
+
+// drag leave
+fileBtn.addEventListener('dragleave', () => {
+  fileBtn.style.backgroundColor = '#264653';
+});
+
+// drop
+fileBtn.addEventListener('drop', (e) => {
+  e.preventDefault();
+  fileBtn.style.backgroundColor = '#264653';
+
+  const droppedFiles = e.dataTransfer.files;
+  if (!droppedFiles.length) return;
+
+  const file = droppedFiles[0];
+
+  if (!file.name.toLowerCase().endsWith('.mid')) {
+    alert(currentLang === 'ja'
+      ? 'MIDI (.mid) ファイルを選択してください'
+      : 'Please select a MIDI (.mid) file');
+    return;
+  }
+
+  // input を上書き
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  fileInput.files = dt.files;
+
+  fileName.textContent = file.name;
+});
+
+});
 
     // ファイル選択時（プレビュー）
     fileInput.addEventListener('change', function () {
