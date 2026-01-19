@@ -19,16 +19,18 @@ from music21 import converter, abcFormat
 
 def analyze_midi_with_abc(file_path, intention="なし"):
     try:
-        # 1. MIDIファイルの読み込み
         score = converter.parse(file_path)
         
-        # 2. ABC記法への変換
-        # music21の内部機能を使って、StreamオブジェクトをABC形式の文字列に変換します
-        abc_converter = abcFormat.translate.abcFileFromStream(score)
-        abc_text = str(abc_converter)
-
-        # 3. プロンプトの作成
-        # 冗長なリストではなく、コンパクトなABC記法を「解析データ」として渡します
+        temp_abc_path = file_path + ".abc"
+        score.write('abc', fp=temp_abc_path)
+        
+        with open(temp_abc_path, 'r', encoding='utf-8') as f:
+            abc_text = f.read()
+            
+        # 使い終わった一時ファイルは消す
+        if os.path.exists(temp_abc_path):
+            os.remove(temp_abc_path)
+            
         input_text = f"""
 あなたは音楽理論の教師です。
 以下のABC記法で記述されたMIDIデータの解析結果を元に、楽曲の構造、コード進行、メロディの特徴を分析してください。
@@ -80,6 +82,7 @@ def analyze_midi_with_abc(file_path, intention="なし"):
         return response.choices[0].message.content.strip()
 
     except Exception as e:
+        import traceback
         print(f"Error details: {e}") # デバッグ用にコンソール出力
         return f"解析エラーが発生しました: {str(e)}"
 
@@ -100,14 +103,12 @@ def index():
         file_path = os.path.join("uploads", file.filename)
         file.save(file_path)
 
-        feedback = analyze_midi(file_path, intention)
+        feedback = analyze_midi_with_abc(file_path, intention)
         
-        # 必要であれば保存したファイルを削除
-        # os.remove(file_path)
-
     return render_template("index.html", feedback=feedback)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
