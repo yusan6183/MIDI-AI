@@ -75,6 +75,18 @@
       box-sizing: border-box;
       resize: vertical;
     }
+
+    select {
+      width: 100%;
+      font-size: 1em;
+      padding: 12px;
+      margin-bottom: 1.2em;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background-color: #ffffff;
+      box-sizing: border-box;
+    }
+
     button[type="submit"], #previewBtn {
       background-color: #264653;
       color: white;
@@ -162,7 +174,6 @@
   margin-bottom: 15px;
 }
   </style>
-  <script src="https://www.midijs.net/lib/midi.js"></script>
 </head>
 <body>
 
@@ -174,15 +185,6 @@
       <a onclick="showTab('home')"><i class="fas fa-home"></i> <span id="navHomeText">ホーム</span></a>
       <a onclick="showTab('howto')"><i class="far fa-question-circle"></i> <span id="navHowtoText">使い方</span></a>
 
-      <div id="langSelector" style="position: relative; display: inline-block; margin-left: 20px;">
-        <button id="langToggle" style="background:none; border:none; color:#e2e8f0; cursor:pointer; font-weight:500; font-family: inherit;" >
-          <i class="fas fa-globe"></i> Language
-        </button>
-        <ul id="langMenu" style="display:none; position: absolute; right: 0; background: #1e293b; list-style:none; margin:0; padding:5px 0; border-radius: 4px; min-width: 100px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index:1000;">
-          <li style="padding: 8px 20px; color:#e2e8f0; cursor:pointer;" data-lang="ja">日本語</li>
-          <li style="padding: 8px 20px; color:#e2e8f0; cursor:pointer;" data-lang="en">English</li>
-        </ul>
-      </div>
     </nav>
   </header>
 
@@ -200,17 +202,31 @@
       <label for="midi_file" id="labelMidiFile"><i class="fas fa-folder-open"></i> MIDIファイルを選択：</label>
       
       <!--ファイル選択ボタン-->
-      <input type="file" id="midi_file" name="midi_file" accept=".mid" required style="display:none;" />
+      <input type="file" id="midi_file" name="midi_file" accept=".mid" multiple required style="display:none;" />
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.2em;">
         <button type="button" id="fileBtn" style="background-color:#264653; color:white; padding:10px 16px; border:none; border-radius:6px; cursor:pointer;">参照</button>
         <span id="fileName">ファイルが選択されていません。</span>
       </div>
 
-      <label for="intention" id="labelIntention"><i class="fas fa-music"></i> 曲の意図・曲のキー（例：悲しいバラードにしたい・Cキー）：</label>
+      <label for="intention" id="labelIntention"><i class="fas fa-music"></i> 曲の意図・曲のキー（例：悲しい感じにしたい・Cキー）：</label>
       <textarea id="intention" name="intention" rows="3" placeholder="曲のイメージや方向性、曲に使用しているキーを入力してください" required></textarea>
 
+      <label for="genre" id="labelGenre"><i class="fas fa-guitar"></i> 曲のジャンル：</label>
+      <select id="genre" name="genre" required>
+        <option value="">選択してください</option>
+        <option value="pop">ポップス</option>
+        <option value="rock">ロック</option>
+        <option value="ballad">バラード</option>
+        <option value="jazz">ジャズ</option>
+        <option value="hiphop">ヒップホップ</option>
+        <option value="classical">クラシック</option>
+        <option value="anime">アニソン風</option>
+        <option value="game">ゲーム音楽風</option>
+        <option value="lofi">Lo-Fi</option>
+        <option value="other">その他</option>
+      </select>
+
       <button type="submit" id="submitBtn"><i class="fas fa-pen"></i> フィードバック生成</button>
-      <button type="button" id="previewBtn" style="margin-top:10px;" disabled><i class="fas fa-play"></i> プレビュー再生</button>
     </form>
 
     <!-- AIフィードバック結果 -->
@@ -224,21 +240,32 @@
   <section id="howto">
     <h1 id="howtoTitle">使い方</h1>
 
-    <h2 id="step1Title">① MIDIファイルをアップロード</h2>
-    <p id="step1Desc">ホームページのフォームでMIDIファイルを選択する。</p>
+     <h2>① MIDIファイルを選択</h2>
+    <p>
+      「参照」ボタンから、分析したい <strong>MIDI(.mid)ファイル</strong> を選択してください。<br>
+      複数ファイルの同時選択にも対応しています。
+    </p>
 
-    <h2 id="step2Title">② 曲の意図・曲のキーを記入</h2>
-    <p id="step2Desc">例えば「悲しいバラードにしたい・Cキー」など、曲の方向性や曲で使用しているキーをできるだけ具体的に記入する。</p>
+    <h2>② 曲の意図・キーを入力</h2>
+    <p>
+      曲の雰囲気や方向性、使用しているキーを入力してください。<br>
+      （例：悲しい感じにしたい・Cキー）
+    </p>
 
-    <h2 id="step3Title">③ フィードバック生成を押す</h2>
-    <p id="step3Desc">AIがコードの内容や構成を分析してフィードバックを返す。</p>
+    <h2>③ ジャンルを選択</h2>
+    <p>
+      曲に近いジャンルを選ぶことで、より適切なフィードバックが生成されます。
+    </p>
 
-    <h2 id="step4Title">④　プレビュー再生</h2>
-    <p id="step4Desc">ボタンを押すとアップロードした曲が流れる。</p>
+    <h2>④ フィードバック生成</h2>
+    <p>
+      「フィードバック生成」ボタンを押すと、AIが楽曲を分析し、<br>
+      項目別点数評価や、改善点、アレンジのヒントを文章で返します。
+    </p>
   </section>
 
   <footer>
-    &copy; 2025 MIDI AI Insighter
+    &copy; 2026 MIDI AI Insighter
   </footer>
 
   <script>
@@ -250,16 +277,10 @@
     }
 
     const fileInput = document.getElementById('midi_file');
-    const previewBtn = document.getElementById('previewBtn');
-    const langToggleBtn = document.getElementById('langToggle');
-    const langMenu = document.getElementById('langMenu');
     const submitBtn = document.getElementById('submitBtn');
     const fileBtn   = document.getElementById('fileBtn');
     const fileName  = document.getElementById('fileName');
 
-    let midiDataUrl = null;
-    let isPlaying = false;
-    let currentLang = 'ja';
 
 // ===== ファイル選択ボタン動作（クリック＋ドラッグ＆ドロップ） =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -280,12 +301,11 @@ fileBtn.addEventListener('click', () => {
 
 // 通常選択
 fileInput.addEventListener('change', () => {
-  fileName.textContent = fileInput.files.length > 0
-    ? fileInput.files[0].name
-    : (currentLang === 'ja'
-        ? 'ファイルが選択されていません。'
-        : 'No file selected.');
+  fileName.textContent = fileInput.files.length
+    ? Array.from(fileInput.files).map(f => f.name).join(', ')
+    : 'ファイルが選択されていません。';
 });
+
 
 // drag over
 fileBtn.addEventListener('dragover', (e) => {
@@ -298,7 +318,7 @@ fileBtn.addEventListener('dragleave', () => {
   fileBtn.style.backgroundColor = '#264653';
 });
 
-// drop
+// drop (複数対応)
 fileBtn.addEventListener('drop', (e) => {
   e.preventDefault();
   fileBtn.style.backgroundColor = '#264653';
@@ -306,157 +326,29 @@ fileBtn.addEventListener('drop', (e) => {
   const droppedFiles = e.dataTransfer.files;
   if (!droppedFiles.length) return;
 
-  const file = droppedFiles[0];
+  // `.mid` のみ抽出
+  const validFiles = Array.from(droppedFiles).filter(f =>
+    f.name.toLowerCase().endsWith('.mid')
+  );
 
-  if (!file.name.toLowerCase().endsWith('.mid')) {
-    alert(currentLang === 'ja'
-      ? 'MIDI (.mid) ファイルを選択してください'
-      : 'Please select a MIDI (.mid) file');
-    return;
-  }
-
-  // input を上書き
   const dt = new DataTransfer();
-  dt.items.add(file);
+  validFiles.forEach(f => dt.items.add(f));
   fileInput.files = dt.files;
 
-  fileName.textContent = file.name;
+  fileName.textContent = validFiles.map(f => f.name).join(', ');
 });
 
+
 });
 
-    // ファイル選択時（プレビュー）
-    fileInput.addEventListener('change', function () {
-      const file = fileInput.files[0];
-      if (!file || (file.type !== 'audio/midi' && !file.name.endsWith('.mid'))) {
-        previewBtn.disabled = true;
-        return;
-      }
 
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        midiDataUrl = e.target.result;
-        MIDIjs.stop();
-        isPlaying = false;
-        previewBtn.disabled = false;
-        previewBtn.innerHTML = currentLang === 'ja' 
-          ? '<i class="fas fa-play"></i> プレビュー再生' 
-          : '<i class="fas fa-play"></i> Preview Play';
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // プレビュー再生ボタン
-    previewBtn.addEventListener('click', function () {
-      if (!midiDataUrl) return;
-
-      if (isPlaying) {
-        MIDIjs.stop();
-        isPlaying = false;
-        previewBtn.innerHTML = currentLang === 'ja' 
-          ? '<i class="fas fa-play"></i> プレビュー再生' 
-          : '<i class="fas fa-play"></i> Preview Play';
-      } else {
-        MIDIjs.play(midiDataUrl);
-        isPlaying = true;
-        previewBtn.innerHTML = currentLang === 'ja' 
-          ? '<i class="fas fa-pause"></i> 停止' 
-          : '<i class="fas fa-pause"></i> Stop';
-      }
-    });
-
-    // 言語メニュー表示
-    langToggleBtn.addEventListener('click', () => {
-      langMenu.style.display = langMenu.style.display === 'block' ? 'none' : 'block';
-    });
-
-    // メニュー外クリックで閉じる
-    document.addEventListener('click', (e) => {
-      if (!document.getElementById('langSelector').contains(e.target)) {
-        langMenu.style.display = 'none';
-      }
-    });
-
-    // 言語選択
-    langMenu.querySelectorAll('li').forEach(item => {
-      item.addEventListener('click', () => {
-        const selectedLang = item.getAttribute('data-lang');
-        if(selectedLang !== currentLang){
-          currentLang = selectedLang;
-          langMenu.style.display = 'none';
-          updateLanguage(currentLang);
-        }
-      });
-    });
-
-    function updateLanguage(lang) {
-      if(lang === 'ja'){
-        document.getElementById('navHomeText').textContent = 'ホーム';
-        document.getElementById('navHowtoText').textContent = '使い方';
-
-        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> AI フィードバック生成';
-        document.getElementById('labelMidiFile').innerHTML = '<i class="fas fa-folder-open"></i> MIDIファイルを選択：';
-        fileBtn.innerHTML = '参照';
-        if(fileInput.files.length === 0){
-          fileName.textContent = 'ファイルが選択されていません。';
-        }
-        document.getElementById('labelIntention').innerHTML = '<i class="fas fa-music"></i> 曲の意図・曲のキー（例：悲しいバラードにしたい・Cキー）：';
-        document.getElementById('intention').placeholder = '曲のイメージや方向性、曲に使用しているキーを入力してください。';
-        document.getElementById('intention').style.fontSize = "1.0em";
-        submitBtn.innerHTML = '<i class="fas fa-pen"></i> フィードバック生成';
-        previewBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i> 停止' : '<i class="fas fa-play"></i> プレビュー再生';
-        document.getElementById('feedbacktitle').innerHTML = '<i class="fas fa-comment-dots"></i> AIフィードバック結果';
-
-        document.getElementById('howtoTitle').textContent = '使い方';
-        document.getElementById('step1Title').textContent = '① MIDIファイルをアップロード';
-        document.getElementById('step1Desc').textContent = 'ホームページのフォームでMIDIファイルを選択する。';
-        document.getElementById('step2Title').textContent = '② 曲の意図・曲のキーを記入';
-        document.getElementById('step2Desc').textContent = '例えば「悲しいバラードにしたい・Cキー」など、曲の方向性や曲で使用しているキーをできるだけ具体的に記入する。';
-        document.getElementById('step3Title').textContent = '③ フィードバック生成を押す';
-        document.getElementById('step3Desc').textContent = 'AIがコードの内容や構成を分析してフィードバックを返します。';
-        document.getElementById('step4Title').textContent = '④　プレビュー再生';
-        document.getElementById('step4Desc').textContent = 'ボタンを押すとアップロードした曲が流れます。';
-
-      } else {
-        document.getElementById('navHomeText').textContent = 'Home';
-        document.getElementById('navHowtoText').textContent = 'How to Use';
-
-        document.getElementById('homeTitle').innerHTML = '<i class="fas fa-headphones-alt"></i> AI Feedback Generator';
-        document.getElementById('labelMidiFile').innerHTML = '<i class="fas fa-folder-open"></i> Select MIDI file:';
-        fileBtn.innerHTML = 'Browse';
-        if(fileInput.files.length === 0){
-          fileName.textContent = 'No file selected.';
-        }
-        document.getElementById('labelIntention').innerHTML = '<i class="fas fa-music"></i> Song intention・Song key (e.g. want a sad ballad・C key):';
-        document.getElementById('intention').placeholder = "Enter the song's image, direction and the key used in the song.";
-        document.getElementById('intention').style.fontSize = "1.3em";
-        submitBtn.innerHTML = '<i class="fas fa-pen"></i> Generate Feedback';
-        previewBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i> Stop' : '<i class="fas fa-play"></i> Preview Play';
-        document.getElementById('feedbacktitle').innerHTML = '<i class="fas fa-comment-dots"></i> AI Feedback Result';
-
-        document.getElementById('howtoTitle').textContent = 'How to Use';
-        document.getElementById('step1Title').textContent = '① Upload MIDI file';
-        document.getElementById('step1Desc').textContent = 'Select a MIDI file using the form on the home page.';
-        document.getElementById('step2Title').textContent = '② Enter song intention・song key';
-        document.getElementById('step2Desc').textContent = 'Write as specifically as possible about the direction and the key used in the song, e.g. "I want a sad ballad.・C key"';
-        document.getElementById('step3Title').textContent = '③ Click Generate Feedback';
-        document.getElementById('step3Desc').textContent = 'AI analyzes the chords and structure and returns feedback.';
-        document.getElementById('step4Title').textContent = '④　Preview Play';
-        document.getElementById('step4Desc').textContent = 'Pressing the button plays the uploaded song.';
-      }
-    }
-    const form = document.getElementById('feedbackForm');
+  const form = document.getElementById('feedbackForm');
   const loadingOverlay = document.getElementById('loadingOverlay');
   const loadingText = document.getElementById('loadingText');
 
   form.addEventListener('submit', () => {
     loadingOverlay.style.display = 'flex';
 
-    // 言語切り替え対応
-    loadingText.textContent =
-      currentLang === 'ja'
-        ? 'フィードバック作成中…'
-        : 'Generating feedback...';
   });
   </script>
 
