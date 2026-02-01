@@ -98,14 +98,14 @@ def analyze_score_with_abc(score, intention="なし"):
 　
 満点でない項目は、関連する音楽理論を初心者向けに説明してください。
 
-【詳細】
+【詳細】＊コードに関するフィードバックを多めに
 ・使用したキー・コード：コード構成音、スケール構成音
 ・BPM・拍子：BPMの値、曲の拍子
 ・改善の余地がある理由（200字以上）
 ・具体的な改善方法（200字以上）
 ・意図に近づけるための工夫（200字以上）
 
-専門用語はできるだけ避け、やさしく説明してください。
+
 """
 
         response = client.chat.completions.create(
@@ -169,4 +169,5 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
