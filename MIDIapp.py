@@ -19,12 +19,9 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
-# =====================
-# MIDI統合処理
-# =====================
 def merge_midis(file_paths):
     """
-    複数MIDIを1つのScoreとして連結
+    複数MIDIを1つのScoreとして連結（ABC向けにフラット化）
     """
     merged_score = stream.Score()
 
@@ -34,13 +31,13 @@ def merge_midis(file_paths):
         if isinstance(el, (tempo.MetronomeMark, meter.TimeSignature)):
             merged_score.insert(0, el)
 
-    # 順番に結合
+    # 各MIDIのPartをフラット化して追加
     for path in file_paths:
         score = converter.parse(path)
-        merged_score.append(score)
+        for part in score.parts:
+            merged_score.append(part.flat)
 
     return merged_score
-
 # =====================
 # ABC記法＋AI解析
 # =====================
@@ -54,6 +51,9 @@ def analyze_score_with_abc(score, intention="なし"):
         with open(temp_abc_path, "r", encoding="utf-8") as f:
             abc_text = f.read()
 
+        if not abc_text.strip():
+            return "解析可能な音符データが見つかりませんでした。"
+        
         if os.path.exists(temp_abc_path):
             os.remove(temp_abc_path)
 
@@ -98,7 +98,7 @@ def analyze_score_with_abc(score, intention="なし"):
 　
 満点でない項目は、関連する音楽理論を初心者向けに説明してください。
 
-【詳細】＊コードに関するフィードバックを多めに
+【詳細】＊コードに関するフィードバックを多めにすること。スケール構成音の例：Cメジャーキー「ド、レ、ミ、ファ、ソ、ラ、シ」、コード構成音の例：C[ド、ミ、ソ]。スケールやコードをフィードバックで書くときは必ず構成音を記述すること。
 ・使用したキー・コード：コード構成音、スケール構成音
 ・BPM・拍子：BPMの値、曲の拍子
 ・改善の余地がある理由（200字以上）
@@ -169,5 +169,6 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
