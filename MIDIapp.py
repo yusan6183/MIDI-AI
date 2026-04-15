@@ -4,6 +4,10 @@ import os
 import json
 from music21 import converter, tempo, meter, key, stream, note, chord
 from openai import OpenAI
+from flask import send_from_directory
+import subprocess
+import uuid
+from midi2audio import FluidSynth
 
 # =====================
 # 環境変数読み込み
@@ -165,6 +169,55 @@ def analyze_json_with_ai(notes_json_path, intention="なし"):
 # =====================
 # ルーティング
 # =====================
+
+# =====================
+# 🎧 プレビュー再生API（追加）
+# =====================
+@app.route('/preview', methods=['POST'])
+def preview():
+    files = request.files.getlist('midi_files')
+    results = []
+
+    os.makedirs("uploads", exist_ok=True)
+    os.makedirs("outputs", exist_ok=True)
+
+    fs = FluidSynth(sound_font="soundfonts/SGM-V2.01.sf2")
+
+    for file in files:
+        if file.filename.lower().endswith(".mid"):
+
+            uid = str(uuid.uuid4())
+
+            midi_path = os.path.join("uploads", f"{uid}.mid")
+            wav_path = os.path.join("outputs", f"{uid}.wav")
+            mp3_path = os.path.join("outputs", f"{uid}.mp3")
+
+            file.save(midi_path)
+
+            fs.midi_to_audio(midi_path, wav_path)
+
+            subprocess.run([
+                "ffmpeg", "-y",
+                "-i", wav_path,
+                mp3_path
+            ])
+
+            results.append({
+                "name": file.filename,
+                "url": f"/audio/{uid}.mp3"
+            })
+
+    return jsonify(results)
+
+
+# =====================
+# 🔊 音声配信API（追加）
+# =====================
+@app.route('/audio/<filename>')
+def audio(filename):
+    return send_from_directory("outputs", filename)
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     feedback = None
