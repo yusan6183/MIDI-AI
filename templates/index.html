@@ -229,7 +229,9 @@
       <button type="submit" id="submitBtn"><i class="fas fa-pen"></i> フィードバック生成</button>
     </form>
 
-    <!-- AIフィードバック結果 -->
+<div id="fileList" style="margin-top:20px;"></div>
+
+<!-- AIフィードバック結果 -->
     {% if feedback %}
     <h2 class="feedback-title" id="feedbacktitle"><i class="fas fa-comment-dots"></i> AIフィードバック結果</h2>
     <div class="feedback-box">{{ feedback }}</div>
@@ -285,7 +287,6 @@
 // ===== ファイル選択ボタン動作（クリック＋ドラッグ＆ドロップ） =====
 document.addEventListener('DOMContentLoaded', () => {
 
-const fileInput = document.getElementById('midi_file');
 const fileBtn   = document.getElementById('fileBtn');
 const fileName  = document.getElementById('fileName');
 
@@ -350,6 +351,89 @@ fileBtn.addEventListener('drop', (e) => {
     loadingOverlay.style.display = 'flex';
 
   });
+
+  const fileList = document.getElementById('fileList');
+  let audioPlayer = new Audio();
+  let currentPlayingBtn = null;
+
+// ファイル選択時にプレビュー生成
+fileInput.addEventListener('change', async () => {
+
+  const files = fileInput.files;
+  if (!files.length) return;
+
+  const formData = new FormData();
+  for (let f of files) {
+    formData.append('midi_files', f);
+  }
+
+  loadingOverlay.style.display = 'flex';
+  loadingText.textContent = '音声を生成中…';
+
+  const res = await fetch('/preview', {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+
+  loadingOverlay.style.display = 'none';
+  fileList.innerHTML = '';
+
+  data.forEach(item => {
+
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.gap = '10px';
+
+    const btn = document.createElement('button');
+    btn.innerHTML = '<i class="fas fa-play"></i>';
+    // 見た目
+    btn.style.padding = '6px 10px';
+    btn.style.borderRadius = '6px';
+    btn.style.border = 'none';
+    btn.style.cursor = 'pointer';
+    btn.style.backgroundColor = '#264653';
+    btn.style.color = 'white';
+
+    btn.onclick = () => {
+
+      if (currentPlayingBtn && currentPlayingBtn !== btn) {
+        currentPlayingBtn.innerHTML = '<i class="fas fa-play"></i>';
+      }
+
+      if (audioPlayer.src.includes(item.url) && !audioPlayer.paused) {
+        audioPlayer.pause();
+        btn.innerHTML = '<i class="fas fa-play"></i>';
+        currentPlayingBtn = null;
+        return;
+      }
+
+      audioPlayer.src = item.url;
+      audioPlayer.play();
+
+      btn.innerHTML = '<i class="fas fa-stop"></i>';
+      currentPlayingBtn = btn;
+    };
+
+    const name = document.createElement('span');
+    name.textContent = item.name;
+
+    wrapper.appendChild(btn);
+    wrapper.appendChild(name);
+    fileList.appendChild(wrapper);
+  });
+
+});
+
+// 再生終了でボタン戻す
+audioPlayer.addEventListener('ended', () => {
+  if (currentPlayingBtn) {
+    currentPlayingBtn.textContent = '▶ 再生';
+    currentPlayingBtn = null;
+  }
+});
   </script>
 
 </body>
