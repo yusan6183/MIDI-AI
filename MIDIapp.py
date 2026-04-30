@@ -206,22 +206,30 @@ def export_musicxml_and_json(score):
                 "duration": float(el.quarterLength)
             })
 
+    scores = evaluate_music(score)
+
+    score_path = "output/score.json"
+
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(notes_data, f, ensure_ascii=False, indent=2)
 
     return {
         "musicxml_path": musicxml_path,
         "json_path": json_path,
+        "score_path": score_path, 
         "event_count": len(notes_data)
     }
 
 # =====================
 # AI解析
 # =====================
-def analyze_json_with_ai(notes_json_path, intention="なし"):
+def analyze_json_with_ai(notes_json_path, score_json_path, intention="なし"):
     try:
         with open(notes_json_path, "r", encoding="utf-8") as f:
             notes_data = json.load(f)
+
+        with open(score_json_path, "r", encoding="utf-8") as f:
+            scores = json.load(f)
 
         if not notes_data:
             return "解析可能な音符データがありませんでした。"
@@ -229,14 +237,17 @@ def analyze_json_with_ai(notes_json_path, intention="なし"):
         input_text = f"""
 あなたは音楽理論に詳しい、初心者にも分かりやすく教える教師です。
 
-以下はMIDIから抽出されたJSON形式の音楽データとそれの採点結果です。
-各要素には音の高さ、長さ、位置、強さが含まれています。
+以下はMIDIから抽出されたJSON形式の音楽データとそれの採点結果、ユーザーの意図です。
+音楽データの各要素には音の高さ、長さ、位置、強さが含まれています。
 
 【採点結果】
 {json.dumps(scores, ensure_ascii=False)}
 
 【音楽データ】
 {json.dumps(notes_data, ensure_ascii=False)}
+
+【ユーザーの意図】
+{intention}
 
 このスコアをもとに以下のテンプレートを使って解説を作成してください。
 
@@ -299,8 +310,12 @@ def index():
 
         merged_score = merge_midis(file_paths)
         export_info = export_musicxml_and_json(merged_score)
-        feedback = analyze_json_with_ai(export_info["json_path"], intention)
-
+        feedback = analyze_json_with_ai(
+            export_info["json_path"],
+            export_info["score_path"],   
+            intention
+        )
+        
     return render_template("index.html", feedback=feedback)
 
 # =====================
