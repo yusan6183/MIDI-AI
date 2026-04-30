@@ -6,6 +6,138 @@ from music21 import converter, tempo, meter, key, stream, note, chord
 from openai import OpenAI
 
 # =====================
+# 追加：メロディ検出
+# =====================
+def detect_melody_part(score):
+    best_part = None
+    best_score = -1
+
+    for part in score.parts:
+        notes = [n for n in part.recurse().notes if n.isNote]
+        if len(notes) < 10:
+            continue
+
+        avg_pitch = sum(n.pitch.midi for n in notes) / len(notes)
+        pitch_range = max(n.pitch.midi for n in notes) - min(n.pitch.midi for n in notes)
+        chord_count = len([c for c in part.recurse().getElementsByClass(chord.Chord)])
+
+        score_val = avg_pitch * 0.5 + pitch_range * 0.3 - chord_count * 2
+
+        if score_val > best_score:
+            best_score = score_val
+            best_part = part
+
+    return best_part
+
+
+# =====================
+# ハーモニー採点
+# =====================
+def evaluate_harmony(score, key_obj):
+    chords = list(score.chordify().recurse().getElementsByClass(chord.Chord))
+
+    if not chords:
+        return 0
+
+    scale = [p.name for p in key_obj.pitches]
+
+    total = 0
+    inside = 0
+
+    for c in chords:
+        for p in c.pitches:
+            total += 1
+            if p.name in scale:
+                inside += 1
+
+    diatonic_score = (inside / total) * 10
+
+    # 終止
+    last = chords[-1]
+    deg = key_obj.getScaleDegreeFromPitch(last.root())
+
+    if deg == 1:
+        cadence = 10
+    elif deg == 5:
+        cadence = 8
+    else:
+        cadence = 5
+
+    return round(diatonic_score + cadence, 1)
+
+
+# =====================
+# メロディ採点
+# =====================
+def evaluate_melody(part):
+    notes = [n for n in part.recurse().notes if n.isNote]
+
+    if len(notes) < 2:
+        return 0
+
+    # 滑らかさ
+    small = 0
+    for i in range(len(notes)-1):
+        diff = abs(notes[i+1].pitch.midi - notes[i].pitch.midi)
+        if diff <= 2:
+            small += 1
+
+    smooth = (small / (len(notes)-1)) * 10
+
+    # 音域
+    pitches = [n.pitch.midi for n in notes]
+    diff = max(pitches) - min(pitches)
+    range_score = max(0, 10 - abs(diff - 15))
+
+    return round(smooth + range_score, 1)
+
+
+# =====================
+# リズム採点
+# =====================
+import statistics
+
+def evaluate_rhythm(score):
+    measures = score.parts[0].getElementsByClass('Measure')
+
+    counts = [len(m.notes) for m in measures if len(m.notes) > 0]
+
+    if len(counts) < 2:
+        return 0
+
+    std = statistics.stdev(counts)
+    density = max(0, 10 - std)
+
+    from collections import Counter
+    most = Counter(counts).most_common(1)[0][1]
+    groove = (most / len(counts)) * 10
+
+    return round(density + groove, 1)
+
+
+# =====================
+# 総合評価
+# =====================
+def evaluate_music(score):
+    key_obj = score.analyze('key')
+
+    melody_part = detect_melody_part(score)
+
+    harmony = evaluate_harmony(score, key_obj)
+    melody = evaluate_melody(melody_part) if melody_part else 0
+    rhythm = evaluate_rhythm(score)
+
+    total = harmony + melody + rhythm
+
+    return {
+        "key": str(key_obj),
+        "harmony": harmony,
+        "melody": melody,
+        "rhythm": rhythm,
+        "total": round(total, 1)
+    }
+
+# =====================
 # 環境変数読み込み
 # =====================
 load_dotenv()
@@ -97,53 +229,31 @@ def analyze_json_with_ai(notes_json_path, intention="なし"):
         input_text = f"""
 あなたは音楽理論に詳しい、初心者にも分かりやすく教える教師です。
 
-以下はMIDIから抽出されたJSON形式の音楽データです。
+以下はMIDIから抽出されたJSON形式の音楽データとそれの採点結果です。
 各要素には音の高さ、長さ、位置、強さが含まれています。
 
-【解析データ（JSON）】
+【採点結果】
+{json.dumps(scores, ensure_ascii=False)}
+
+【音楽データ】
 {json.dumps(notes_data, ensure_ascii=False)}
 
-【ユーザーの意図】
-{intention}
+このスコアをもとに以下のテンプレートを使って解説を作成してください。
 
-【指示】
-解析データをもとに、以下の順でフィードバックを記述してください。各項目はーーーーーーーーーーーーーーーーーーーーー線で区切ってください。
+【まとめ】
+各項目の要約
 
-・まとめ（改善点と改善案の要点）
+【スコア】
+採点結果をそのまま載せる
 
-【採点】
-【ハーモニー】＊和音を使うトラックがあれば採点
-　・キー適合性　点数＝（使われているキーのスケール内の音の総数/データ内の全音数）×10（10点満点、少数第一位で四捨五入）
-　・始まりの安定感　点数＝（始まりのコードがI,IV,VI系のコード進行の総数/データ内の全コード進行の数）×10（10点満点、少数第一位で四捨五入）
-　・終わりの安定感　点数＝（終わりのコードがI,V,VI系のコード進行の総数/データ内の全コード進行の数）×10（10点満点、少数第一位で四捨五入)
-  ・コードのバリエーション　点数＝（使われたすべてのコードの種類（G、Am、Am7、Gsus4等をすべて１種類とする）/全小節数の平方根）×10（10点満点、少数第一位で四捨五入)
-  ・コードチェンジの安定感　点数＝（隣あうコードの平均移動距離（半音でカウント））３．８＜平均値＜４．２で10点　以降平均値が0.1ズレるごとに1点減点
-  ・総点数　得点/50点
+【良い点】
+スコアの高いところを理論的にほめる
 
-【メロディ】＊ベーストラックを除く単音のトラックがあれば採点
-　・メロディの滑らかさ　点数＝（隣り合う音の音程差が３以下の数/総移動回数）×10（10点満点、少数第一位で四捨五入)
-　・音の高さの範囲　点数＝　１０ー（最高音と最低音の差（全音でカウント）ー１５の絶対値）　最低０点
-　・リズムとの一致　点数＝　（1拍目または３拍目がメロディー音の開始地点になっている小節/全小節数）×10（10点満点、少数第一位で四捨五入）
-　・繰り返しの有無　点数＝　（同じメロディーを繰り返している小節×３/全小節）　×10（10点満点、少数第一位で四捨五入）
-　・コードとの相性　点数＝　（その瞬間のコード構成音と一致しているメロディー音の総数/全メロディー音数×0.6）×10（10点満点、少数第一位で四捨五入）
-　・総点数　得点/50点
+【改善点】
+どの部分がどう違うかを詳しく終える
 
-【リズム】＊ベースまたはドラムトラックがあれば採点
-　・拍子の一致　点数＝１０－（拍子とリズムが不一致の小節/全小節）×10（10点満点、少数第一位で四捨五入）
-　・ノリの均一感　点数＝（同一リズムの小節×４/全小節）×10（10点満点、少数第一位で四捨五入）
-　・音の密度の均一感　点数＝（小節内の音符の標準偏差）　最大10点
-　・リズムのバリエーション　点数＝異なるリズムの小節の種類　最大10点
-　・総点数　得点/40点
-　
-満点でない項目は、関連する音楽理論を初心者向けに説明してください。
-
-【詳細】＊コードに関するフィードバックを多めにすること。スケール構成音の例：Cメジャーキー「ド、レ、ミ、ファ、ソ、ラ、シ」、コード構成音の例：C[ド、ミ、ソ]。スケールやコードをフィードバックで書くときは必ず構成音を記述すること。
-・使用したキー・コード：コード構成音、スケール構成音
-・BPM・拍子：BPMの値、曲の拍子
-・改善の余地がある理由（200字以上）
-・具体的な改善方法（200字以上）
-・意図に近づけるための工夫（200字以上）
-
+【改善案】
+指摘したところの具体的な変更案をそれぞれにいくつか用意する
 
 """
 
