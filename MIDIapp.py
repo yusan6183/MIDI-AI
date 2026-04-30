@@ -221,18 +221,30 @@ def analyze_json_with_ai(notes_json_path, score_json_path, intention="なし"):
             scores = json.load(f)
 
         input_text = f"""
-音楽データと採点結果です。
+あなたは音楽理論に詳しい、初心者にも分かりやすく教える教師です。 
+
+以下はMIDIから抽出されたJSON形式の音楽データとそれの採点結果、ユーザーの意図です。 
+音楽データの各要素には音の高さ、長さ、位置、強さが含まれています。 
 
 【採点結果】
-{json.dumps(scores, ensure_ascii=False)}
+{json.dumps(scores, ensure_ascii=False)} 
 
 【音楽データ】
-{json.dumps(notes_data, ensure_ascii=False)}
+{json.dumps(notes_data, ensure_ascii=False)} 
 
-【意図】
-{intention}
+【ユーザーの意図】
+{intention} 
 
-改善点と良い点を説明してください。
+このスコアをもとに以下のテンプレートを使って解説を作成してください。 
+【まとめ】 各項目の要約 
+
+【スコア】 採点結果をそのまま載せる 
+
+【良い点】 スコアの高いところを理論的にほめる 
+
+【改善点】 どの部分がどう違うかを詳しく終える どの部分がどう違うかを詳しく教える 
+
+【改善案】 指摘したところの具体的な変更案をそれぞれにいくつか用意する
 """
 
         response = client.chat.completions.create(
