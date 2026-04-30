@@ -1,0 +1,5 @@
+flask
+music21
+openai
+python-dotenv
+gunicorn
