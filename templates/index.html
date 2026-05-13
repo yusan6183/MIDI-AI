@@ -1,18 +1,27 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <!--文字化け防止-->
   <meta charset="UTF-8" />
+  <!--スマホ画面対応-->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--タイトル-->
   <title>MIDI AI Insighter</title>
+  <!--記号-->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!--フォント-->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&display=swap" rel="stylesheet" />
+  
   <style>
+    /*全体*/
     body {
       font-family: 'Noto Serif JP', serif;
       margin: 0;
       background: #f1f5f9;
       color: #1e293b;
     }
+    
+    /*ヘッダー*/
     header {
       background-color: #1e293b;
       color: white;
@@ -42,6 +51,8 @@
     nav a:hover, nav button:hover {
       color: #94d2bd;
     }
+
+    /*ページ分け*/
     section {
       display: none;
       padding: 30px 20px;
@@ -50,6 +61,8 @@
     section.active {
       display: block;
     }
+
+    /*メインカード*/
     form {
       background: white;
       padding: 24px;
@@ -75,7 +88,6 @@
       box-sizing: border-box;
       resize: vertical;
     }
-
     select {
       width: 100%;
       font-size: 1em;
@@ -86,7 +98,6 @@
       background-color: #ffffff;
       box-sizing: border-box;
     }
-
     button[type="submit"], #previewBtn {
       background-color: #264653;
       color: white;
@@ -107,12 +118,16 @@
       text-align: center;
       margin-bottom: 20px;
     }
+
+    /*フッター*/
     footer {
       text-align: center;
       padding: 20px;
       color: #64748b;
       font-size: 0.9em;
     }
+
+    /*フィードバック*/
     .feedback-title {
       text-align: center;
       margin-top: 40px;
@@ -133,10 +148,14 @@
       border-radius: 8px;
       color: #1e293b;
     }
+
+    /*動き*/
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /*スマホ用*/
     @media (max-width: 600px) {
       header {
         flex-direction: column;
@@ -149,34 +168,92 @@
         max-width: 100%;
       }
     }
+    
     /* ローディングオーバーレイ */
-#loadingOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(241, 245, 249, 0.9);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(241, 245, 249, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .loadingContent {
+      text-align: center;
+      color: #264653;
+      font-size: 1.2em;
+    }
+    .loadingContent i {
+      font-size: 3em;
+      margin-bottom: 15px;
+    }
 
-.loadingContent {
-  text-align: center;
-  color: #264653;
-  font-size: 1.2em;
-}
-
-.loadingContent i {
-  font-size: 3em;
-  margin-bottom: 15px;
-}
+    /*説明カード*/
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .step-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      position: relative;
+      transition: transform 0.2s;
+    }
+    .step-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    /*番号*/
+    .step-number {
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      background: #264653;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    /*説明エリア*/
+    .detail-box {
+      max-height: 0;
+      overflow: hidden;
+      background: white;
+      margin: 10px 0 20px;
+      padding: 0 20px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .detail-box.active {
+      max-height: 200px;
+      padding: 15px 20px;
+    }
+    .step-card h2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .toggle-icon {
+      font-size: 1.2em;
+      color: #264653;
+    }
   </style>
 </head>
 <body>
-
+  <!--ヘッダー-->
   <header>
     <div class="logo" onclick="showTab('home')">
       <i class="fas fa-music"></i> MIDI AI Insighter
@@ -184,10 +261,10 @@
     <nav>
       <a onclick="showTab('home')"><i class="fas fa-home"></i> <span id="navHomeText">ホーム</span></a>
       <a onclick="showTab('howto')"><i class="far fa-question-circle"></i> <span id="navHowtoText">使い方</span></a>
-
     </nav>
   </header>
 
+  <!--ローディング-->
   <div id="loadingOverlay">
     <div class="loadingContent">
       <i class="fas fa-spinner fa-spin"></i>
@@ -237,31 +314,44 @@
   </section>
 
   <!-- 使い方画面 -->
-  <section id="howto">
-    <h1 id="howtoTitle">使い方</h1>
-
-     <h2>① MIDIファイルを選択</h2>
-    <p>
-      「参照」ボタンから、分析したい <strong>MIDI(.mid)ファイル</strong> を選択してください。<br>
-      複数ファイルの同時選択にも対応しています。
-    </p>
-
-    <h2>② 曲の意図・キーを入力</h2>
-    <p>
-      曲の雰囲気や方向性、使用しているキーを入力してください。<br>
-      （例：悲しい感じにしたい・Cキー）
-    </p>
-
-    <h2>③ ジャンルを選択</h2>
-    <p>
-      曲に近いジャンルを選ぶことで、より適切なフィードバックが生成されます。
-    </p>
-
-    <h2>④ フィードバック生成</h2>
-    <p>
-      「フィードバック生成」ボタンを押すと、AIが楽曲を分析し、<br>
-      項目別点数評価や、改善点、アレンジのヒントを文章で返します。
-    </p>
+  <div class="steps">
+      <div class="step-card" onclick="toggleDetail(this,1)">
+        <div class="step-number">1</div>
+        <h2>
+            <span><i class="fas fa-folder-open"></i> MIDIファイルを選択</span>
+            <span class="toggle-icon">+</span>
+        </h2>
+      </div>
+      <div class="detail-box" id="detail-1"></div>
+  
+      <div class="step-card" onclick="toggleDetail(this,2)">
+        <div class="step-number">2</div>
+        <h2>
+            <span><i class="fas fa-music"></i> 曲の意図を入力</span>
+            <span class="toggle-icon">+</span>
+        </h2>
+      </div>
+      <div class="detail-box" id="detail-2"></div>
+  
+      <div class="step-card" onclick="toggleDetail(this,3)">
+        <div class="step-number">3</div>
+        <h2>
+            <span><i class="fas fa-guitar"></i> ジャンルを選択</span>
+            <span class="toggle-icon">+</span>
+        </h2>
+      </div>
+      <div class="detail-box" id="detail-3"></div>
+  
+      <div class="step-card" onclick="toggleDetail(this,4)">
+        <div class="step-number">4</div>
+        <h2>
+            <span><i class="fas fa-robot"></i> フィードバック生成</span>
+            <span class="toggle-icon">+</span>
+        </h2>
+      </div>
+      <div class="detail-box" id="detail-4"></div>
+  
+    </div>
   </section>
 
   <footer>
@@ -275,81 +365,117 @@
       });
       document.getElementById(id).classList.add('active');
     }
+    
+    /*ファイル選択ボタン動作（クリック＋ドラッグ＆ドロップ)*/
+    document.addEventListener('DOMContentLoaded', () => {
+      const fileInput = document.getElementById('midi_file');
+      const fileBtn   = document.getElementById('fileBtn');
+      const fileName  = document.getElementById('fileName');
+      if (!fileInput || !fileBtn || !fileName) {
+        console.error('要素が取得できていません');
+        return;
+      }
+      
+      /*クリックで選択*/
+      fileBtn.addEventListener('click', () => {
+        fileInput.click();
+      });
+      
+      /*通常選択*/
+      fileInput.addEventListener('change', () => {
+        fileName.textContent = fileInput.files.length
+        ? Array.from(fileInput.files).map(f => f.name).join(', ')
+        : 'ファイルが選択されていません。';
+      });
 
-    const fileInput = document.getElementById('midi_file');
-    const submitBtn = document.getElementById('submitBtn');
-    const fileBtn   = document.getElementById('fileBtn');
-    const fileName  = document.getElementById('fileName');
+      /*ドラック可能*/
+      fileBtn.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileBtn.style.backgroundColor = '#2a9d8f';
+      });
+      fileBtn.addEventListener('dragleave', () => {
+        fileBtn.style.backgroundColor = '#264653';
+      });
 
+      /*複数対応*/
+      fileBtn.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileBtn.style.backgroundColor = '#264653';
+        const droppedFiles = e.dataTransfer.files;
+        if (!droppedFiles.length) return;
+        /*.midだけ*/
+        const validFiles = Array.from(droppedFiles).filter(f =>
+        f.name.toLowerCase().endsWith('.mid')
+        );
+        const dt = new DataTransfer();
+        validFiles.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
+        fileName.textContent = validFiles.map(f => f.name).join(', ');
+      });
+    });
+    
+    const form = document.getElementById('feedbackForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    form.addEventListener('submit', () => {
+      loadingOverlay.style.display = 'flex';
+    });
 
-// ===== ファイル選択ボタン動作（クリック＋ドラッグ＆ドロップ） =====
-document.addEventListener('DOMContentLoaded', () => {
+    function toggleDetail(card, step) {
+      const box = document.getElementById(`detail-${step}`);
+      const icon = card.querySelector('.toggle-icon');
 
-const fileInput = document.getElementById('midi_file');
-const fileBtn   = document.getElementById('fileBtn');
-const fileName  = document.getElementById('fileName');
+      /*すでに開いてたら閉じる*/
+      if (box.classList.contains('active')) {
+        box.classList.remove('active');
+        box.innerHTML = "";
+        icon.textContent = "+";
+        return;
+      }
 
-if (!fileInput || !fileBtn || !fileName) {
-  console.error('要素が取得できていません');
-  return;
-}
+      /*開く（他は閉じない）*/
+      let content = "";
 
-// クリックで選択
-fileBtn.addEventListener('click', () => {
-  fileInput.click();
-});
+      /*使い方内容*/
+      if (step === 1) {
+        content = `
+        <p>参照ボタンから、解析したい曲をアップロードする。</p>
+        <ul>
+          <p>※複数選択OK</p>
+          <p>※MIDIファイルのみ対応</p>
+          </ul>
+          `;
+        }
 
-// 通常選択
-fileInput.addEventListener('change', () => {
-  fileName.textContent = fileInput.files.length
-    ? Array.from(fileInput.files).map(f => f.name).join(', ')
-    : 'ファイルが選択されていません。';
-});
+        if (step === 2) {
+          content = `
+          <p>曲のイメージや使用したキーを入力する。</p>
+          <ul>
+            <p>例：明るい・悲しい・Cキー</p>
+            <p>※大まかな内容でもOK
+            </ul>
+            `;
+          }
 
+          if (step === 3) {
+            content = `
+            <p>曲のジャンルを選択する。</p>
+            <ul>
+              <p>９種類のジャンルの中から自分の曲のジャンルを選択</p>
+              <p>※当てはまるジャンルがない場合はその他を選択</p>
+            `;
+          }
 
-// drag over
-fileBtn.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  fileBtn.style.backgroundColor = '#2a9d8f';
-});
+          if (step === 4) {
+            content = `
+            <p>ボタンを押してAI分析開始する。</p>
+            <p>※少し時間がかかることがあります</p>
+            `;
+          }
 
-// drag leave
-fileBtn.addEventListener('dragleave', () => {
-  fileBtn.style.backgroundColor = '#264653';
-});
-
-// drop (複数対応)
-fileBtn.addEventListener('drop', (e) => {
-  e.preventDefault();
-  fileBtn.style.backgroundColor = '#264653';
-
-  const droppedFiles = e.dataTransfer.files;
-  if (!droppedFiles.length) return;
-
-  // `.mid` のみ抽出
-  const validFiles = Array.from(droppedFiles).filter(f =>
-    f.name.toLowerCase().endsWith('.mid')
-  );
-
-  const dt = new DataTransfer();
-  validFiles.forEach(f => dt.items.add(f));
-  fileInput.files = dt.files;
-
-  fileName.textContent = validFiles.map(f => f.name).join(', ');
-});
-
-
-});
-
-
-  const form = document.getElementById('feedbackForm');
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const loadingText = document.getElementById('loadingText');
-
-  form.addEventListener('submit', () => {
-    loadingOverlay.style.display = 'flex';
-
-  });
+          box.innerHTML = content;
+          box.classList.add('active');
+          icon.textContent = "-";
+        }
   </script>
 
 </body>
