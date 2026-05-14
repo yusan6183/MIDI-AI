@@ -494,35 +494,35 @@ def analyze_json_with_ai(notes_json_path, score_json_path, intention="none"):
             return "No analyzable note data was found."
 
         input_text = f"""
-You are a kind music theory teacher. Reply in Japanese.
+あなたは音楽理論に詳しい、初心者にもわかりやすく教える教師です。
 
-Use the extracted MIDI data, scoring result, and user intention below.
+以下はMIDIから抽出されたMusicXML形式の解析データ、それに基づいた採点結果、そしてユーザーの意図です。
 
-[Scoring result]
-{json.dumps(scores, ensure_ascii=False)}
-
-[Music data]
+[解析データ]
 {json.dumps(notes_data, ensure_ascii=False)}
 
-[User intention]
+[採点結果]
+{json.dumps(scores, ensure_ascii=False)}
+
+[ユーザーの意図]
 {intention}
 
-Please explain with this structure:
+これらもとに、以下の順でフィードバックを作成してください。:
 
-[Summary]
-Summarize harmony, melody, and rhythm.
+[まとめ]
+良かった点、改善点と改善策を簡潔にまとめてください。
 
-[Score]
-Show each item score clearly.
+[点数]
+採点結果をそのまま提示して下さい。
 
-[Good points]
-Explain high-scoring points with beginner-friendly music theory.
+[良かった点]
+評価点が高かった項目について、なぜ良かったのか音楽理論に基づいてできるだけ詳しく説明してください。
 
-[Improvement points]
-Explain low-scoring points and why they matter.
+[改善点]
+評価点が低かった項目について、なぜ低かったのかを音楽理論に基づいてできる限り詳しく説明してください。
 
-[Improvement ideas]
-Give several concrete revision ideas.
+[改善策]
+先ほど挙げた改善点に対してそれぞれにいくつか具体的な改善案を提示し、改善の例なども挙げてください。
 """
 
         response = client.chat.completions.create(
