@@ -52,6 +52,54 @@
       color: #94d2bd;
     }
 
+    /*言語メニュー*/
+    .lang-menu{
+        position:relative;
+        display:inline-block;
+    }
+    #langToggle{
+        color: #e2e8f0;
+        margin-left: 20px;
+        background: none;
+        border: none;
+        font-family: inherit;
+        font-size: 1em;
+        cursor: pointer;
+    }
+    #langToggle:hover{
+        color: #94d2bd;
+    }
+    .lang-dropdown{
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 35px;
+        background: white;
+        border-radius: 8px;
+        min-width: 140px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        overflow: hidden;
+        z-index: 1000;
+    }
+    .lang-dropdown button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        background: white;
+        text-align: left;
+        cursor: pointer;
+        font-size: 0.95em;
+        color: #264653;
+        font-weight: bold;
+    }
+    .lang-dropdown button:hover {
+        background: #f1f5f9;
+    }
+    .lang-dropdown.active{
+        display: block;
+    }
+
+
     /*ページ分け*/
     section {
       display: none;
@@ -263,6 +311,13 @@
     <nav>
       <a onclick="showTab('home')"><i class="fas fa-home"></i> <span id="navHomeText">ホーム</span></a>
       <a onclick="showTab('howto')"><i class="far fa-question-circle"></i> <span id="navHowtoText">使い方</span></a>
+      <div class="lang-menu">
+        <button type="button" id="langToggle"><i class="fa-solid fa-globe"></i> Language</button>
+        <div class="lang-dropdown" id="langDropdown">
+            <button type="button" onclick="setLanguage('ja')">日本語</button>
+            <button type="button" onclick="setLanguage('en')">English</button>
+        </div>
+      </div>
     </nav>
   </header>
 
@@ -292,17 +347,17 @@
 
       <label for="genre" id="labelGenre"><i class="fas fa-guitar"></i> 曲のジャンル：</label>
       <select id="genre" name="genre" required>
-        <option value="">選択してください</option>
-        <option value="pop">ポップス</option>
-        <option value="rock">ロック</option>
-        <option value="ballad">バラード</option>
-        <option value="jazz">ジャズ</option>
-        <option value="hiphop">ヒップホップ</option>
-        <option value="classical">クラシック</option>
-        <option value="anime">アニソン風</option>
-        <option value="game">ゲーム音楽風</option>
-        <option value="lofi">Lo-Fi</option>
-        <option value="other">その他</option>
+        <option value="" id="genreDefault">選択してください</option>
+        <option value="pop" id="genrePop">ポップス</option>
+        <option value="rock" id="genreRock">ロック</option>
+        <option value="ballad" id="genreBallad">バラード</option>
+        <option value="jazz" id="genreJazz">ジャズ</option>
+        <option value="hiphop" id="genreHiphop">ヒップホップ</option>
+        <option value="classical" id="genreClassical">クラシック</option>
+        <option value="anime" id="genreAnime">アニソン風</option>
+        <option value="game" id="genreGame">ゲーム音楽風</option>
+        <option value="lofi" id="genreLofi">Lo-Fi</option>
+        <option value="other" id="genreOther">その他</option>
       </select>
 
       <button type="submit" id="submitBtn"><i class="fas fa-pen"></i> フィードバック生成</button>
@@ -317,12 +372,12 @@
 
   <!-- 使い方画面 -->
   <section id="howto">
-    <h1><i class="far fa-question-circle"></i>使い方</h1><br>
+    <h1 id="howtoTitle"><i class="far fa-question-circle"></i>使い方</h1><br>
     <div class="steps">
         <div class="step-card" onclick="toggleDetail(this,1)">
           <div class="step-number">1</div>
           <h2>
-              <span><i class="fas fa-folder-open"></i> MIDIファイルを選択</span>
+              <span id="stepTitle1"><i class="fas fa-folder-open"></i> MIDIファイルを選択</span>
               <span class="toggle-icon">+</span>
           </h2>
         </div>
@@ -331,7 +386,7 @@
         <div class="step-card" onclick="toggleDetail(this,2)">
           <div class="step-number">2</div>
           <h2>
-              <span><i class="fas fa-music"></i> 曲の意図を入力</span>
+              <span id="stepTitle2"><i class="fas fa-music"></i> 曲の意図を入力</span>
               <span class="toggle-icon">+</span>
           </h2>
         </div>
@@ -340,7 +395,7 @@
         <div class="step-card" onclick="toggleDetail(this,3)">
           <div class="step-number">3</div>
           <h2>
-              <span><i class="fas fa-guitar"></i> ジャンルを選択</span>
+              <span id="stepTitle3"><i class="fas fa-guitar"></i> ジャンルを選択</span>
               <span class="toggle-icon">+</span>
           </h2>
         </div>
@@ -349,7 +404,7 @@
         <div class="step-card" onclick="toggleDetail(this,4)">
           <div class="step-number">4</div>
           <h2>
-              <span><i class="fas fa-robot"></i> フィードバック生成</span>
+              <span id="stepTitle4"><i class="fas fa-robot"></i> フィードバック生成</span>
               <span class="toggle-icon">+</span>
           </h2>
         </div>
@@ -363,6 +418,7 @@
   </footer>
 
   <script>
+    let currentLang = "ja";
     function showTab(id) {
       document.querySelectorAll('section').forEach(section => {
         section.classList.remove('active');
@@ -440,45 +496,179 @@
       let content = "";
 
       /*使い方内容*/
-      if (step === 1) {
-        content = `
-        <p>参照ボタンから、解析したい曲をアップロードする。</p>
-        <ul>
-          <p>※複数選択OK</p>
-          <p>※MIDIファイルのみ対応</p>
-          </ul>
-          `;
-        }
+      /*日本語*/
+      if(currentLang === "ja"){
+
+        if (step === 1) {
+            content = `
+            <p>参照ボタンから、解析したい曲をアップロードする。</p>
+            <ul>
+                <p>※複数選択OK</p>
+                <p>※MIDIファイルのみ対応</p>
+                </ul>
+                `;
+            }
 
         if (step === 2) {
-          content = `
-          <p>曲のイメージや使用したキーを入力する。</p>
-          <ul>
-            <p>例：明るい・悲しい・Cキー</p>
-            <p>※大まかな内容でもOK
-            </ul>
-            `;
-          }
-
-          if (step === 3) {
+            content = `
+            <p>曲のイメージや使用したキーを入力する。</p>
+            <ul>
+                <p>例：明るい・悲しい・Cキー</p>
+                <p>※大まかな内容でもOK</p>
+                </ul>
+                `;
+            }
+        
+        if (step === 3) {
             content = `
             <p>曲のジャンルを選択する。</p>
             <ul>
-              <p>９種類のジャンルの中から自分の曲のジャンルを選択</p>
-              <p>※当てはまるジャンルがない場合はその他を選択</p>
-            `;
-          }
+                <p>9種類のジャンルの中から選択</p>
+                <p>※ない場合はその他を選択</p>
+                </ul>
+                `;
+            }
 
-          if (step === 4) {
+        if (step === 4) {
             content = `
             <p>ボタンを押してAI分析開始する。</p>
             <p>※少し時間がかかることがあります</p>
+                `;
+            }
+}
+
+      if(currentLang === "en"){
+
+        if (step === 1) {
+            content = `
+            <p>Upload the MIDI file you want to analyze.</p>
+            <ul>
+                <p>※Multiple files supported</p>
+                <p>※Only MIDI files are supported</p>
+                </ul>
+                `;
+            }
+
+        if (step === 2) {
+            content = `
+            <p>Enter the song image and key.</p>
+            <ul>
+                <p>Example: Bright / Sad / C key</p>
+                <p>※Simple input is OK</p>
+                </ul>
+                `;
+            }
+
+
+        if (step === 3) {
+            content = `
+            <p>Select the genre of the song.</p>
+            <ul>
+                <p>Select from 9 genres</p>
+                <p>※Choose "Other" if none match</p>
+                </ul>
+                `;
+            }
+            
+        if (step === 4) {
+            content = `
+            <p>Press the button to start AI analysis.</p>
+            <p>※It may take some time</p>
             `;
-          }
+        }
+}
 
           box.innerHTML = content;
           box.classList.add('active');
           icon.textContent = "-";
+        }
+
+        /*言語メニュー開閉*/
+        const langToggle = document.getElementById("langToggle");
+        const langDropdown = document.getElementById("langDropdown");
+
+        langToggle.addEventListener("click",() => {
+            langDropdown.classList.toggle("active");
+        });
+
+        /*言語切り替え*/
+        function setLanguage(lang){
+            currentLang = lang;
+            /*日本語*/
+            if(lang === "ja"){
+                /*ホーム画面*/
+                document.getElementById("navHomeText").textContent = "ホーム";
+                document.getElementById("navHowtoText").textContent = "使い方";
+                document.getElementById("homeTitle").innerHTML = '<i class="fas fa-headphones-alt"></i> AI フィードバック生成';
+                document.getElementById("labelMidiFile").innerHTML = '<i class="fas fa-folder-open"></i> MIDIファイルを選択：';
+                document.getElementById("fileName").textContent = "ファイルが選択されていません。";
+                document.getElementById("labelIntention").innerHTML = '<i class="fas fa-music"></i> 曲の意図・曲のキー（例：悲しい感じにしたい・Cキー）：';
+                document.getElementById("intention").placeholder = "曲のイメージや方向性、曲に使用しているキーを入力してください";
+                document.getElementById("labelGenre").innerHTML = '<i class="fas fa-guitar"></i> 曲のジャンル：';
+                document.getElementById("genreDefault").textContent = "選択してください";
+                document.getElementById("genrePop").textContent = "ポップス";
+                document.getElementById("genreRock").textContent = "ロック";
+                document.getElementById("genreBallad").textContent = "バラード";
+                document.getElementById("genreJazz").textContent = "ジャズ";
+                document.getElementById("genreHiphop").textContent = "ヒップホップ";
+                document.getElementById("genreClassical").textContent = "クラシック";
+                document.getElementById("genreAnime").textContent = "アニソン風";
+                document.getElementById("genreGame").textContent = "ゲーム音楽風";
+                document.getElementById("genreLofi").textContent = "Lo-Fi";
+                document.getElementById("genreOther").textContent = "その他";
+                document.getElementById("submitBtn").innerHTML = '<i class="fas fa-pen"></i> フィードバック生成';
+                document.getElementById("loadingText").textContent = "フィードバック作成中…";
+                const feedbackTitle = document.getElementById("feedbacktitle");
+                if (feedbackTitle) {
+                    feedbackTitle.innerHTML = '<i class="fas fa-comment-dots"></i> AIフィードバック結果';
+                }
+                /*使い方画面*/
+                document.querySelector("#howto h1").innerHTML = '<i class="far fa-question-circle"></i> 使い方';
+                document.getElementById("howtoTitle").innerHTML = '<i class="far fa-question-circle"></i> 使い方';
+                document.getElementById("stepTitle1").innerHTML = '<i class="fas fa-folder-open"></i> MIDIファイルを選択';
+                document.getElementById("stepTitle2").innerHTML = '<i class="fas fa-music"></i> 曲の意図を入力';
+                document.getElementById("stepTitle3").innerHTML = '<i class="fas fa-guitar"></i> ジャンルを選択';
+                document.getElementById("stepTitle4").innerHTML = '<i class="fas fa-robot"></i> フィードバック生成';
+            }
+            /*英語*/
+            if(lang === "en"){
+                /*ホーム画面*/
+                document.getElementById("navHomeText").textContent = "Home";
+                document.getElementById("navHowtoText").textContent = "How To Use";
+                document.getElementById("homeTitle").innerHTML = '<i class="fas fa-headphones-alt"></i> AI Feedback Generator';
+                document.getElementById("labelMidiFile").innerHTML = '<i class="fas fa-folder-open"></i> Select MIDI File:';
+                document.getElementById("fileName").textContent = "No file selected.";
+                document.getElementById("labelIntention").innerHTML = '<i class="fas fa-music"></i> Song intention / key:';
+                document.getElementById("intention").placeholder = "Enter the song image, direction, and key";
+                document.getElementById("labelGenre").innerHTML = '<i class="fas fa-guitar"></i> Genre:';
+                document.getElementById("genreDefault").textContent = "Select";
+                document.getElementById("genrePop").textContent = "Pop";
+                document.getElementById("genreRock").textContent = "Rock";
+                document.getElementById("genreBallad").textContent = "Ballad";
+                document.getElementById("genreJazz").textContent = "Jazz";
+                document.getElementById("genreHiphop").textContent = "Hip Hop";
+                document.getElementById("genreClassical").textContent = "Classical";
+                document.getElementById("genreAnime").textContent = "Anime Style";
+                document.getElementById("genreGame").textContent = "Game Music Style";
+                document.getElementById("genreLofi").textContent = "Lo-Fi";
+                document.getElementById("genreOther").textContent = "Other";
+                document.getElementById("submitBtn").innerHTML = '<i class="fas fa-pen"></i> Generate Feedback';
+                document.getElementById("loadingText").textContent = "Generating feedback...";
+                const feedbackTitle = document.getElementById("feedbacktitle");
+                if (feedbackTitle) {
+                    feedbackTitle.innerHTML = '<i class="fas fa-comment-dots"></i> AI Feedback Result';
+                }
+                /*使い方画面*/
+                document.querySelector("#howto h1").innerHTML = '<i class="far fa-question-circle"></i> How To Use';
+                document.getElementById("howtoTitle").innerHTML = '<i class="far fa-question-circle"></i> How To Use';
+                document.getElementById("stepTitle1").innerHTML = '<i class="fas fa-folder-open"></i> Select MIDI File';
+                document.getElementById("stepTitle2").innerHTML = '<i class="fas fa-music"></i> Enter Song Intention';
+                document.getElementById("stepTitle3").innerHTML = '<i class="fas fa-guitar"></i> Select Genre';
+                document.getElementById("stepTitle4").innerHTML = '<i class="fas fa-robot"></i> Generate Feedback';
+            }
+
+            /*メニュー閉じる*/
+            langDropdown.classList.remove("active");
         }
   </script>
 
