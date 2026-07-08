@@ -556,9 +556,10 @@ if (fileInput.files.length) {
         const dt = new DataTransfer();
         validFiles.forEach(f => dt.items.add(f));
         fileInput.files = dt.files;
-        fileName.textContent = validFiles.map(f => f.name).join(', ');
-      });
+        // changeイベントを発生させる
+        fileInput.dispatchEvent(new Event('change'));
     });
+});
     
     const form = document.getElementById('feedbackForm');
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -693,6 +694,8 @@ if (fileInput.files.length) {
         /*言語切り替え*/
         function setLanguage(lang){
             currentLang = lang;
+            const fileInput = document.getElementById("midi_file");
+            const fileName = document.getElementById("fileName");
             /*日本語*/
             if(lang === "ja"){
                 /*ホーム画面*/
@@ -700,7 +703,6 @@ if (fileInput.files.length) {
                 document.getElementById("navHowtoText").textContent = "使い方";
                 document.getElementById("homeTitle").innerHTML = '<i class="fas fa-headphones-alt"></i> AI フィードバック生成';
                 document.getElementById("labelMidiFile").innerHTML = '<i class="fas fa-folder-open"></i> MIDIファイルを選択：';
-                document.getElementById("fileName").textContent = "ファイルが選択されていません。";
                 document.getElementById("fileBtn").textContent = "参照";
                 document.getElementById("labelIntention").innerHTML = '<i class="fas fa-music"></i> 曲の意図・曲のキー（例：悲しい感じにしたい・Cキー）：';
                 document.getElementById("intention").placeholder = "曲のイメージや方向性、曲に使用しているキーを入力してください";
@@ -738,7 +740,6 @@ if (fileInput.files.length) {
                 document.getElementById("navHowtoText").textContent = "How To Use";
                 document.getElementById("homeTitle").innerHTML = '<i class="fas fa-headphones-alt"></i> AI Feedback Generator';
                 document.getElementById("labelMidiFile").innerHTML = '<i class="fas fa-folder-open"></i> Select MIDI File:';
-                document.getElementById("fileName").textContent = "No file selected.";
                 document.getElementById("fileBtn").textContent = "Browse";
                 document.getElementById("labelIntention").innerHTML = '<i class="fas fa-music"></i> Song intention / key:';
                 document.getElementById("intention").placeholder = "Enter the song image, direction, and key";
@@ -770,6 +771,16 @@ if (fileInput.files.length) {
                 document.getElementById("stepTitle5").innerHTML = '<i class="fa-solid fa-play"></i> Preview Playback';
             }
 
+            if(fileInput.files.length>0){
+                fileName.textContent = Array.from(fileInput.files)
+                .map(file=>file.name)
+                .join(",");
+            }else{
+                fileName.textContent =
+                lang === "ja"
+                ?"ファイルが選択されていません。"
+                :"No file selected.";
+            }
             /*メニュー閉じる*/
             langDropdown.classList.remove("active");
         }
