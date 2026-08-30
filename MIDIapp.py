@@ -545,46 +545,62 @@ def index():
     feedback = None
 
     if request.method == "POST":
-        files = request.files.getlist("midi_file")
-        if not files:
-            return jsonify({"error": "No MIDI file was uploaded."})
+        print("\n========== POST ==========")
+        print("FILES:", request.files)
+        print("FORM:", request.form)
 
-        intention = request.form.get("intention", "none")
-        genre = request.form.get("genre", "unspecified")
-        intention = f"{intention}\nGenre: {genre}"
-        os.makedirs("uploads", exist_ok=True)
+        files = request.files.getlist("midi_file")
+
+        print("取得したファイル数:", len(files))
+
+        for i, file in enumerate(files):
+            print(f"file[{i}] filename:", repr(file.filename))
+            print(f"file[{i}] content_type:", file.content_type)
+
+        if not files:
+            return jsonify({
+                "error": "request.files にファイルがありません"
+            })
 
         file_paths = []
 
-        for file in files:
-            if file is None:
-                continue
+        os.makedirs("uploads", exist_ok=True)
 
+        for file in files:
             filename = secure_filename(file.filename or "")
-    
-            print("受信ファイル:", repr(filename))
+
+            print("処理するファイル:", repr(filename))
 
             if not filename:
                 continue
-        
+
             if not filename.lower().endswith((".mid", ".midi")):
+                print("MIDIではないためスキップ:", filename)
                 continue
 
             path = os.path.join("uploads", filename)
             file.save(path)
+
+            print("保存しました:", path)
+            print("ファイルサイズ:", os.path.getsize(path))
+
             file_paths.append(path)
 
-        print("保存されたファイル:", file_paths)
+        print("最終的なfile_paths:", file_paths)
 
         if not file_paths:
-            return jsonify({"error": "No valid MIDI file was uploaded."})
+            return jsonify({
+                "error": "No valid MIDI file was uploaded."
+            })
 
         merged_score = merge_midis(file_paths)
+
         export_info = export_musicxml_and_json(merged_score)
+
         feedback = analyze_json_with_ai(
             export_info["json_path"],
             export_info["score_path"],
-            intention,
+            request.form.get("intention", "none")
         )
 
     return render_template("index.html", feedback=feedback)
