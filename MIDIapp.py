@@ -507,7 +507,7 @@ def analyze_json_with_ai(notes_json_path, score_json_path, intention="none"):
 [ユーザーの意図]
 {intention}
 
-これらもとに、以下の順でフィードバックを作成してください。:
+これらもとに、以下のテンプレートを使いフィードバックを作成してください。:
 
 [まとめ]
 良かった点、改善点と改善策を簡潔にまとめてください。
