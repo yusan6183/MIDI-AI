@@ -555,12 +555,26 @@ def index():
         os.makedirs("uploads", exist_ok=True)
 
         file_paths = []
+
         for file in files:
-            filename = secure_filename(file.filename)
-            if filename.lower().endswith((".mid", ".midi")):
-                path = os.path.join("uploads", filename)
-                file.save(path)
-                file_paths.append(path)
+            if file is None:
+                continue
+
+            filename = secure_filename(file.filename or "")
+    
+            print("受信ファイル:", repr(filename))
+
+            if not filename:
+                continue
+        
+            if not filename.lower().endswith((".mid", ".midi")):
+                continue
+
+            path = os.path.join("uploads", filename)
+            file.save(path)
+            file_paths.append(path)
+
+        print("保存されたファイル:", file_paths)
 
         if not file_paths:
             return jsonify({"error": "No valid MIDI file was uploaded."})
