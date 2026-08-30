@@ -545,62 +545,32 @@ def index():
     feedback = None
 
     if request.method == "POST":
-        print("\n========== POST ==========")
-        print("FILES:", request.files)
-        print("FORM:", request.form)
-
         files = request.files.getlist("midi_file")
-
-        print("取得したファイル数:", len(files))
-
-        for i, file in enumerate(files):
-            print(f"file[{i}] filename:", repr(file.filename))
-            print(f"file[{i}] content_type:", file.content_type)
-
         if not files:
-            return jsonify({
-                "error": "request.files にファイルがありません"
-            })
+            return jsonify({"error": "No MIDI file was uploaded."})
 
-        file_paths = []
-
+        intention = request.form.get("intention", "none")
+        genre = request.form.get("genre", "unspecified")
+        intention = f"{intention}\nGenre: {genre}"
         os.makedirs("uploads", exist_ok=True)
 
+        file_paths = []
         for file in files:
-            filename = secure_filename(file.filename or "")
-
-            print("処理するファイル:", repr(filename))
-
-            if not filename:
-                continue
-
-            if not filename.lower().endswith((".mid", ".midi")):
-                print("MIDIではないためスキップ:", filename)
-                continue
-
-            path = os.path.join("uploads", filename)
-            file.save(path)
-
-            print("保存しました:", path)
-            print("ファイルサイズ:", os.path.getsize(path))
-
-            file_paths.append(path)
-
-        print("最終的なfile_paths:", file_paths)
+            filename = secure_filename(file.filename)
+            if filename.lower().endswith((".mid", ".midi")):
+                path = os.path.join("uploads", filename)
+                file.save(path)
+                file_paths.append(path)
 
         if not file_paths:
-            return jsonify({
-                "error": "No valid MIDI file was uploaded."
-            })
+            return jsonify({"error": "No valid MIDI file was uploaded."})
 
         merged_score = merge_midis(file_paths)
-
         export_info = export_musicxml_and_json(merged_score)
-
         feedback = analyze_json_with_ai(
             export_info["json_path"],
             export_info["score_path"],
-            request.form.get("intention", "none")
+            intention,
         )
 
     return render_template("index.html", feedback=feedback)
@@ -608,4 +578,3 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
-
